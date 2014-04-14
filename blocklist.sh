@@ -19,4 +19,5 @@ for i in $LISTS; do
     wget -O - "$i" | gunzip >> "$OUTFILE" 
 done
 
-wc $OUTFILE
+rm "$OUTFILE.gz"
+gzip $OUTFILE
