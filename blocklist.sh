@@ -37,5 +37,6 @@ rm -f $OUTFILE.gz > /dev/null 2>&1
 
 gzip $OUTFILE
 chmod 640 $OUTFILE.gz
+chown root:apache $OUTFILE.gz
 
 exit 0
