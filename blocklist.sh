@@ -1,8 +1,10 @@
 #!/bin/bash
 # Gets all public URLs from iblocklist and fetches them, combining them into one list
+# Copyright (c) Jeff Aigner 2014
 
 PROG=`basename $0`
 
+# check for args
 if [ -z "$1" ]; then
     echo "$PROG: No output file specified"
     echo "usage: $PROG [file]"
@@ -33,9 +35,12 @@ for i in $LISTS; do
     wget -O - "$i" | gunzip >> "$OUTFILE" 
 done
 
-rm -f $OUTFILE.gz > /dev/null 2>&1
+# compress and replace old file
+gzip -c $OUTFILE > $OUTFILE.new.gz
+rm $OUTFILE
+mv $OUTFILE.gz $OUTFILE.gz.last
 
-gzip $OUTFILE
+mv $OUTFILE.new.gz $OUTFILE.gz
 chmod 640 $OUTFILE.gz
 chown root:apache $OUTFILE.gz
 
