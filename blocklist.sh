@@ -4,6 +4,18 @@
 
 PROG=`basename $0`
 
+HTTPD_USER="root"
+
+cat /etc/passwd | cut -d':' -f1 | grep apache &> /dev/null
+if [[ $? -eq 0 ]]; then
+    HTTPD_USER="apache"
+fi    
+
+cat /etc/passwd | cut -d':' -f1 | grep httpd &> /dev/null
+if [[ $? -eq 0 ]]; then
+    HTTPD_USER="httpd"
+fi    
+
 # check for args
 if [ -z "$1" ]; then
     echo "$PROG: No output file specified"
@@ -25,23 +37,22 @@ done
 OUTFILE="$1"
 
 # get a list of urls
-LISTS=$(wget -O - "https://www.iblocklist.com/lists.php" | egrep "list\.iblocklist\.com" | cut -d"'" -f12 | uniq)
+LISTS=$(wget -q -O - "https://www.iblocklist.com/lists.php" | egrep "list\.iblocklist\.com" | cut -d"'" -f12 | uniq)
 
 # clear output file
 echo "" > "$OUTFILE"
 
 # download all lists and append to OUTFILE
 for i in $LISTS; do
-    wget -O - "$i" | gunzip >> "$OUTFILE" 
+    wget -q -O - "$i" | gunzip >> "$OUTFILE" 
 done
 
 # compress and replace old file
 gzip -c $OUTFILE > $OUTFILE.new.gz
 rm $OUTFILE
-mv $OUTFILE.gz $OUTFILE.gz.last
-
 mv $OUTFILE.new.gz $OUTFILE.gz
+
 chmod 640 $OUTFILE.gz
-chown root:apache $OUTFILE.gz
+chown root:$HTTPD_USER $OUTFILE.gz
 
 exit 0
