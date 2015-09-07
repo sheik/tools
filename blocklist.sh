@@ -36,6 +36,8 @@ done
 
 OUTFILE="$1"
 
+echo "[*] Retrieving blocklists from iblocklist.com"
+
 # get a list of urls
 LISTS=$(wget -q -O - "https://www.iblocklist.com/lists.php" | egrep "list\.iblocklist\.com" | cut -d"'" -f12 | uniq)
 
@@ -43,16 +45,25 @@ LISTS=$(wget -q -O - "https://www.iblocklist.com/lists.php" | egrep "list\.ibloc
 echo "" > "$OUTFILE"
 
 # download all lists and append to OUTFILE
+n=1
 for i in $LISTS; do
-    wget -q -O - "$i" | gunzip >> "$OUTFILE" 
+    echo "[*] Fetching blocklist $n"
+    wget -q -O - "$i" | gunzip >> "$OUTFILE"
+    n=$(($n + 1))
 done
+
+echo "[*] Compressing master blocklist"
 
 # compress and replace old file
 gzip -c $OUTFILE > $OUTFILE.new.gz
+
+echo "[*] Cleaning up"
 rm $OUTFILE
 mv $OUTFILE.new.gz $OUTFILE.gz
 
 chmod 640 $OUTFILE.gz
 chown root:$HTTPD_USER $OUTFILE.gz
+
+echo "[*] Complete!"
 
 exit 0
